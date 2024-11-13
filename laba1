@@ -1,0 +1,419 @@
+import tkinter as tk
+from tkinter import ttk
+from tkinter import messagebox
+# from back import table
+from back import rk4
+from test import rk4_test
+from test import test
+from first_main import first_main
+from first_main import rk4_first_main
+# from back import first_main
+from back import rk4_system
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import numpy as np
+
+def show_selected_task(event):
+    selected_task = task_var.get()
+    # messagebox.showinfo("Выбранная задача", f"Вы выбрали: {selected_task}")
+    # Здесь можно добавить логику для обработки выбранной задачи
+    if selected_task == "Тестовая":
+        testovaya()
+    elif selected_task == "Основная 1":
+        Osnovnaya_1()
+    elif selected_task == "Основная 2":
+        entry7.config(state='normal')
+        entry9.config(state='normal')
+        entry10.config(state='normal')
+        Osnovnaya_2()
+
+
+
+# Создаем главное окно
+win = tk.Tk()
+photo = tk.PhotoImage(file="fun.png")
+win.iconphoto(False, photo)
+win.title('Задача Коши для ОДУ')  # заголовок
+win.geometry("1000x700+100+100")  # размеры окна
+win.resizable(False, False)  # запрет изменять размеры окна
+
+# Создаем фрейм для размещения лэйбла и выпадающего списка
+task_frame = tk.Frame(win)
+task_frame.pack(side=tk.TOP, padx=10, pady=10, anchor='w')  # Устанавливаем anchor='w'
+
+# Лэйбл "Задача"
+label_1 = tk.Label(task_frame, text='Задача', font=('Arial', 10, 'bold'))
+label_1.pack(anchor='nw')  # Устанавливаем anchor='w'
+
+# Выпадающий список для выбора задачи
+task_var = tk.StringVar(win)
+task_var.set("Выберите задачу")  # Устанавливаем начальное значение
+task_menu = tk.OptionMenu(task_frame, task_var, "Тестовая", "Основная 1", "Основная 2", command=show_selected_task)
+task_menu.pack(anchor='w')  # Устанавливаем anchor='w'
+
+# Создаем фрейм для размещения меток и полей ввода
+input_frame = tk.Frame(win)
+input_frame.pack(side=tk.TOP, padx=10, pady=10, anchor='w')  # Устанавливаем anchor='w'
+
+# Виджет для вывода значений
+left_column = tk.Frame(input_frame)
+left_column.pack(side=tk.LEFT, padx=5)
+
+right_column = tk.Frame(input_frame)
+right_column.pack(side=tk.LEFT, padx=5)
+
+# Создаем метки и поля ввода
+label1 = tk.Label(left_column, text="Точность выхода за границу")
+label1.pack(anchor='w')  # Устанавливаем anchor='w'
+entry1 = tk.Entry(left_column)
+entry1.pack(anchor='w')  # Устанавливаем anchor='w'
+entry1.insert(0, "0,00001")
+
+label2 = tk.Label(left_column, text="Контроль локальной погрешности")
+label2.pack(anchor='w')  # Устанавливаем anchor='w'
+entry2 = tk.Entry(left_column)
+entry2.pack(anchor='w')  # Устанавливаем anchor='w'
+entry2.insert(0, "0,0001")
+
+label3 = tk.Label(left_column, text="Максималььное число шагов")
+label3.pack(anchor='w')  # Устанавливаем anchor='w'
+entry3 = tk.Entry(left_column)
+entry3.pack(anchor='w')  # Устанавливаем anchor='w'
+entry3.insert(0, "10")
+
+label4 = tk.Label(left_column, text="Начальный шаг")
+label4.pack(anchor='w')  # Устанавливаем anchor='w'
+entry4 = tk.Entry(left_column)
+entry4.pack(anchor='w')  # Устанавливаем anchor='w'
+entry4.insert(0, "0.1")
+
+# Создаем метки и поля ввода для правого столбика
+label5 = tk.Label(left_column, text="x0")
+label5.pack(anchor='w')  # Устанавливаем anchor='w'
+entry5 = tk.Entry(left_column)
+entry5.pack(anchor='w')  # Устанавливаем anchor='w'
+entry5.insert(0, "0")
+
+label6 = tk.Label(right_column, text="v10")
+label6.pack(anchor='w')  # Устанавливаем anchor='w'
+entry6 = tk.Entry(right_column)
+entry6.pack(anchor='w')  # Устанавливаем anchor='w'
+entry6.insert(0, "1")
+
+label7 = tk.Label(right_column, text="v20")
+label7.pack(anchor='w')  # Устанавливаем anchor='w'
+entry7 = tk.Entry(right_column, state='disabled')
+entry7.pack(anchor='w')  # Устанавливаем anchor='w'
+entry7.insert(0, "1")
+
+label8 = tk.Label(right_column, text="Правая граница метода")
+label8.pack(anchor='w')  # Устанавливаем anchor='w'
+entry8 = tk.Entry(right_column)
+entry8.pack(anchor='w')  # Устанавливаем anchor='w'
+entry8.insert(0, "1")
+
+label9 = tk.Label(right_column, text="a")
+label9.pack(anchor='w')  # Устанавливаем anchor='w'
+entry9 = tk.Entry(right_column, state='disabled')
+entry9.pack(anchor='w')  # Устанавливаем anchor='w'
+entry9.insert(0, "0.1")
+
+label10 = tk.Label(right_column, text="b")
+label10.pack(anchor='w')  # Устанавливаем anchor='w'
+entry10 = tk.Entry(right_column, state='disabled')
+entry10.pack(anchor='w')  # Устанавливаем anchor='w'
+entry10.insert(0, "1")
+
+checkbox_var = tk.BooleanVar()
+
+# Создаем виджет с галочкой
+checkbox = tk.Checkbutton(win, text="Контроль локальной погрешности", variable=checkbox_var)
+checkbox.pack(anchor='w')
+
+# checkbox_var = tk.BooleanVar()
+#
+# # Создаем виджет с галочкой
+# checkbox = tk.Checkbutton(win, text="Контроль локальной погрешности", variable=checkbox_var)
+# checkbox.pack(anchor='w')
+
+# # Создаем переменную для хранения выбранной задачи
+# task_var = tk.StringVar(win)
+# task_var.set("Выберите задачу")  # Устанавливаем начальное значение
+#
+# # Создаем выпадающий список (ComboBox)
+# task_menu = tk.OptionMenu(win, task_var, "Тестовая", "Основная 1", "Основная 2", command=show_selected_task)
+# task_menu.pack(anchor='nw', padx=10, pady=10)
+
+
+def testovaya():
+
+    # ПОЛУЧЕНИЕ ЗНАЧЕНИЙ ИЗ ПОЛЕЙ
+    edge = float(entry1.get().replace(',', '.')) # Точность выхода за границу
+    eps = float(entry2.get().replace(',', '.')) # Контроль локальной погрешности
+    n_max = int(entry3.get().replace(',', '.')) # Максималььное число шагов
+    h0 = float(entry4.get().replace(',', '.')) # Начальный шаг
+    x0 = float(entry5.get().replace(',', '.')) # x0
+    v0 = float(entry6.get().replace(',', '.')) # v0
+    b = float(entry8.get().replace(',', '.')) # Правая граница
+
+    # Применяем метод РК
+    table1, info1 = rk4_test(x0, v0, h0, test, b, n_max, eps, edge, checkbox_var.get())
+
+    # ГРАФИК
+    def plot_graph():
+        # Создаем фигуру и оси
+        fig, ax = plt.subplots()
+        ax.plot(table1['x'], table1['v'], label='v', color='blue')
+        ax.plot(table1['x'], table1['u'], label='u', color='red')
+        ax.set_xlabel('x')
+        ax.set_ylabel('v')
+        ax.legend()
+
+        # Встраиваем график в Tkinter
+        canvas = FigureCanvasTkAgg(fig, master=frame)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, )
+
+
+    # Создаем фрейм для графика
+    frame = tk.Frame(win)
+    frame.place(relx=0.55, rely=0.5, relwidth=0.4, relheight=0.4)
+    plot_graph()
+
+    #ТАБЛИЦА
+    frame1 = tk.Frame(win)
+    frame1.place(relx=0, rely=0.5, relwidth=0.5, relheight=0.5)
+
+    heads = ['n', 'h', 'x', 'v', 'w', 'w - v', 'S*', 'mul', 'div', 'u', '|u - v|']
+    table = ttk.Treeview(frame1, show='headings')
+    table['columns'] = heads
+
+    for header in heads:
+        table.heading(header, text=header, anchor='center')
+        table.column(header, width=80, anchor='nw')
+
+
+
+    for i in range(0, info1['N']+1):
+        row_values = []  # Убираем индекс строки
+        for group in table1.keys():
+            # print(table1[group][i])
+            # Получаем значение, если оно существует, иначе None
+            value = table1[group][i] if i < len(table1[group]) else None
+            row_values.append(value)
+        table.insert('', 'end', values=row_values)
+
+    scroll_pane1 = ttk.Scrollbar(frame1, command=table.yview)
+    table.configure(yscrollcommand=scroll_pane1.set)
+    scroll_pane1.pack(side=tk.RIGHT, fill=tk.Y)
+
+    scroll_pane2 = ttk.Scrollbar(frame1, orient="horizontal", command=table.xview)
+    table.configure(xscrollcommand=scroll_pane2.set)
+    scroll_pane2.pack(side=tk.BOTTOM, fill=tk.X)
+
+    table.pack(fill=tk.BOTH, expand=True)
+
+    #СПРАВКА
+    label_2 = tk.Label(win, text='Справка', font=('Arial', 10, 'bold'))
+    label_2.place(relx=0.52, rely=0.02, anchor='ne')
+    info_label = tk.Label(win,
+                          text=f"Метод Рунге Кутта порядка p = {info1['p']}\n"
+                               f"Условия задачи Коши: x0 = {info1['x0']}  u0 = {info1['u0']}\n"
+                               f"Условия остановки счета: b = {info1['b']}  edge = {info1['edge']}\n"
+                               f"Начальный шаг интергрирования и максимальное число шагов метода: h0 = {info1['h0']}    n_max = {n_max}\n"
+                               f"Контроль модуля локальной погрешности сверху и снизу: eps = {info1['eps']}    eps_min = {info1['eps_min']}\n"
+                               f"Вариант контроля: \n"
+                               f"n = {info1['N']}\n"
+                               f"b - xn = {info1['b - xn']}\n"
+                               f"Последняя найденная точка численной траектории: xn = {info1['xn']}     vn = {info1['vn']}\n"
+                               # f"max |En| = {info1['max |En|']} при xn = {info1['xn']}\n"
+                               # f"max |En| = {info1['max |En|']} при xn = {info1['xn']}\n"
+                               f"max|S*| = {info1['max|S*|'][0]} при xi = {info1['max|S*|'][1]}\n"
+                               f"min|S*| = {info1['min|S*|'][0]} при xi = {info1['min|S*|'][1]} \n"
+                               f"Всего уменьшений шага:  {info1['div']}\n"
+                               f"Всего увеличений шага:  {info1['mul']}\n"
+                               f"max hi = {info1['max hi'][0]} при x_i+1 = {info1['max hi'][1]}\n"
+                               f"min hi = {info1['min hi'][0]} при x_i+1 = {info1['min hi'][1]}\n"
+                               f"max|ui - vi| = {info1['max|ui - vi|'][0]}   xi = {info1['max|ui - vi|'][1]}\n",
+                          justify='left')
+    info_label.place(relx=0.97, rely=0.05, anchor='ne')  # Позиционирование в верхнем правом углу
+
+
+def Osnovnaya_1():
+    # ПОЛУЧЕНИЕ ЗНАЧЕНИЙ ИЗ ПОЛЕЙ
+    edge = float(entry1.get().replace(',', '.'))  # Точность выхода за границу
+    eps = float(entry2.get().replace(',', '.'))  # Контроль локальной погрешности
+    n_max = int(entry3.get().replace(',', '.'))  # Максималььное число шагов
+    h0 = float(entry4.get().replace(',', '.'))  # Начальный шаг
+    x0 = float(entry5.get().replace(',', '.'))  # x0
+    v0 = float(entry6.get().replace(',', '.'))  # v0
+    b = float(entry8.get().replace(',', '.'))  # Правая граница
+
+    # Применяем метод РК
+    table1, info1 = rk4_first_main(x0, v0, h0, first_main, b, n_max, eps, edge, checkbox_var.get())
+
+    # ГРАФИК
+    def plot_graph():
+        # Создаем фигуру и оси
+        fig, ax = plt.subplots()
+        ax.plot(table1['x'], table1['v'], label='v', color='blue')
+        ax.set_xlabel('x')
+        ax.set_ylabel('v')
+        ax.legend()
+
+        # Встраиваем график в Tkinter
+        canvas = FigureCanvasTkAgg(fig, master=frame)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, )
+
+    # Создаем фрейм для графика
+    frame = tk.Frame(win)
+    frame.place(relx=0.55, rely=0.5, relwidth=0.4, relheight=0.4)
+    plot_graph()
+
+    # ТАБЛИЦА
+    frame1 = tk.Frame(win)
+    frame1.place(relx=0, rely=0.5, relwidth=0.5, relheight=0.5)
+
+    heads = ['n', 'h', 'x', 'v', 'w', 'w - v', 'S*', 'mul', 'div']
+    table = ttk.Treeview(frame1, show='headings')
+    table['columns'] = heads
+
+    for header in heads:
+        table.heading(header, text=header, anchor='center')
+        table.column(header, width=80, anchor='nw')
+
+    for i in range(0, info1['N']+1):
+        row_values = []  # Убираем индекс строки
+        for group in table1.keys():
+            # Получаем значение, если оно существует, иначе None
+            value = table1[group][i] if i < len(table1[group]) else None
+            row_values.append(value)
+        table.insert('', 'end', values=row_values)
+
+    scroll_pane1 = ttk.Scrollbar(frame1, command=table.yview)
+    table.configure(yscrollcommand=scroll_pane1.set)
+    scroll_pane1.pack(side=tk.RIGHT, fill=tk.Y)
+
+    scroll_pane2 = ttk.Scrollbar(frame1, orient="horizontal", command=table.xview)
+    table.configure(xscrollcommand=scroll_pane2.set)
+    scroll_pane2.pack(side=tk.BOTTOM, fill=tk.X)
+
+    table.pack(fill=tk.BOTH, expand=True)
+
+    # СПРАВКА
+    label_2 = tk.Label(win, text='Справка', font=('Arial', 10, 'bold'))
+    label_2.place(relx=0.52, rely=0.02, anchor='ne')
+    info_label = tk.Label(win,
+                          text=f"Метод Рунге Кутта порядка p = {info1['p']}\n"
+                               f"Условия задачи Коши: x0 = {info1['x0']}  u0 = {info1['u0']}\n"
+                               f"Условия остановки счета: b = {info1['b']}  edge = {info1['edge']}\n"
+                               f"Начальный шаг интергрирования и максимальное число шагов метода: h0 = {info1['h0']}    n_max = {n_max}\n"
+                               f"Контроль модуля локальной погрешности сверху и снизу: eps = {info1['eps']}    eps_min = {info1['eps_min']}\n"
+                               f"Вариант контроля: \n"
+                               f"n = {info1['N']}\n"
+                               f"b - xn = {info1['b - xn']}\n"
+                               f"Последняя найденная точка численной траектории: xn = {info1['xn']}     vn = {info1['vn']}\n"
+                          # f"max |En| = {info1['max |En|']} при xn = {info1['xn']}\n"
+                          # f"max |En| = {info1['max |En|']} при xn = {info1['xn']}\n"
+                               f"max|S*| = {info1['max|S*|'][0]} при xi = {info1['max|S*|'][1]}\n"
+                               f"min|S*| = {info1['min|S*|'][0]} при xi = {info1['min|S*|'][1]}\n"
+                               f"Всего уменьшений шага:  {info1['div']}\n"
+                               f"Всего увеличений шага:  {info1['mul']}\n"
+                               f"max hi = {info1['max hi']}\n"
+                               f"min hi = {info1['min hi']}\n",
+                          justify='left')
+    info_label.place(relx=0.97, rely=0.05, anchor='ne')  # Позиционирование в верхнем правом углу
+
+def Osnovnaya_2():
+    # ПОЛУЧЕНИЕ ЗНАЧЕНИЙ ИЗ ПОЛЕЙ
+    edge = float(entry1.get().replace(',', '.'))  # Точность выхода за границу
+    eps = float(entry2.get().replace(',', '.'))  # Контроль локальной погрешности
+    n_max = int(entry3.get().replace(',', '.'))  # Максималььное число шагов
+    h0 = float(entry4.get().replace(',', '.'))  # Начальный шаг
+    x0 = float(entry5.get().replace(',', '.'))  # x0
+    v10 = float(entry6.get().replace(',', '.'))  # v10
+    v20 = float(entry6.get().replace(',', '.'))  # v20
+    end = float(entry8.get().replace(',', '.'))  # Правая граница
+    a = float(entry8.get().replace(',', '.'))
+    b = float(entry9.get().replace(',', '.'))
+
+    # Применяем метод РК
+    table1, info1 = rk4_system(x0, v10, v20, h0, end, n_max, eps, edge, a, b)
+
+    # ГРАФИК
+    def plot_graph():
+        # Создаем фигуру и оси
+        fig, ax = plt.subplots()
+        ax.plot(table1['x'], table1['v1'], label='v', color='blue')
+        ax.plot(table1['x'], table1['v2'], label='u', color='red')
+        ax.set_xlabel('x')
+        ax.set_ylabel('v')
+        ax.legend()
+
+        # Встраиваем график в Tkinter
+        canvas = FigureCanvasTkAgg(fig, master=frame)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, )
+
+    # Создаем фрейм для графика
+    frame = tk.Frame(win)
+    frame.place(relx=0.55, rely=0.5, relwidth=0.4, relheight=0.4)
+    plot_graph()
+
+    # ТАБЛИЦА
+    frame1 = tk.Frame(win)
+    frame1.place(relx=0, rely=0.5, relwidth=0.5, relheight=0.5)
+
+    heads = ['n', 'h', 'x', 'v', 'w', 'w - v', 'S*', 'mul', 'div']
+    table = ttk.Treeview(frame1, show='headings')
+    table['columns'] = heads
+
+    for header in heads:
+        table.heading(header, text=header, anchor='center')
+        table.column(header, width=80, anchor='nw')
+
+    for i in range(0, info1['N']):
+        row_values = []  # Убираем индекс строки
+        for group in table1.keys():
+            # Получаем значение, если оно существует, иначе None
+            value = table1[group][i] if i < len(table1[group]) else None
+            row_values.append(value)
+        table.insert('', 'end', values=row_values)
+
+    scroll_pane1 = ttk.Scrollbar(frame1, command=table.yview)
+    table.configure(yscrollcommand=scroll_pane1.set)
+    scroll_pane1.pack(side=tk.RIGHT, fill=tk.Y)
+
+    scroll_pane2 = ttk.Scrollbar(frame1, orient="horizontal", command=table.xview)
+    table.configure(xscrollcommand=scroll_pane2.set)
+    scroll_pane2.pack(side=tk.BOTTOM, fill=tk.X)
+
+    table.pack(fill=tk.BOTH, expand=True)
+
+    # СПРАВКА
+    label_2 = tk.Label(win, text='Справка', font=('Arial', 10, 'bold'))
+    label_2.place(relx=0.52, rely=0.02, anchor='ne')
+    info_label = tk.Label(win,
+                          text=f"Метод Рунге Кутта порядка p = {info1['p']}\n"
+                               f"Условия задачи Коши: x0 = {info1['x0']}  u0 = {info1['u0']}\n"
+                               f"Условия остановки счета: b = {info1['b']}  edge = {info1['edge']}\n"
+                               f"Начальный шаг интергрирования и максимальное число шагов метода: h0 = {info1['h0']}    n_max = {n_max}\n"
+                               f"Контроль модуля локальной погрешности сверху и снизу: eps = {info1['eps']}    eps_min = {info1['eps_min']}\n"
+                               f"Вариант контроля: \n"
+                               f"n = {info1['N']}\n"
+                               f"b - xn = {info1['b - xn']}\n"
+                               f"Последняя найденная точка численной траектории: xn = {info1['xn']}     vn = {info1['vn']}\n"
+                          # f"max |En| = {info1['max |En|']} при xn = {info1['xn']}\n"
+                          # f"max |En| = {info1['max |En|']} при xn = {info1['xn']}\n"
+                               f"max|S| = {info1['max|S|']} при xn = {info1['xn']}\n"
+                               f"min|S| = {info1['min|S|']} при xn = {info1['xn']} (кроме x=x0)\n"
+                               f"Всего уменьшений шага:  {info1['div']}\n"
+                               f"Всего увеличений шага:  {info1['mul']}\n"
+                               f"max hn = {info1['max hn']}\n"
+                               f"min hn = {info1['min hn']}\n",
+                          justify='left')
+    info_label.place(relx=0.97, rely=0.05, anchor='ne')  # Позиционирование в верхнем правом углу
+
+
+win.mainloop()
